@@ -11,6 +11,10 @@
   Forget the word "anticheat" forever.
 </h2>
 
+## Supported games
+- [Arsenal](https://www.roblox.com/games/286090429)
+- _Comming soon..._
+
 ## Usage
 1. Download a [Solara Executor](https://getsolara.dev/)
 2. Execute the provided loadstring below.
