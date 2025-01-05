@@ -9,3 +9,15 @@
   <br/>
   Forget the word "anticheat" forever.
 </h2>
+
+## Usage
+1. Download a [Solara Executor](https://getsolara.dev/)
+2. Execute the provided loadstring below.
+```luau
+loadstring(game:HttpGet("https://raw.githubusercontent.com/aartzz/jailcore/main/main.lua", true))()
+```
+
+## Developers & Credits
+[Provektork](https://github.com/Provektork) - Coding
+
+[ArtZabAZ](https://github.com/aartzz) - idk
