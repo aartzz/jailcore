@@ -358,6 +358,10 @@ local function toggleAimbot()
     aimEnabled = not aimEnabled
 end
 
+local function toggleTriggerBot()
+    triggerBotEnabled = not triggerBotEnabled
+end
+
 local combatContent = ContentFrame:FindFirstChild("Combat")
 if combatContent then
     local aimbotLabel = Instance.new("TextLabel")
@@ -378,6 +382,25 @@ if combatContent then
         toggleAimbot()
         enableAimbotButton.Text = aimEnabled and "Disable Aimbot" or "Enable Aimbot"
     end)
+
+    local triggerBotLabel = Instance.new("TextLabel")
+    triggerBotLabel.Size = UDim2.new(1, 0, 0, 30)
+    triggerBotLabel.Position = UDim2.new(0, 0, 0, 140)
+    triggerBotLabel.Text = "TriggerBot Module"
+    triggerBotLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    triggerBotLabel.BackgroundTransparency = 1
+    triggerBotLabel.Parent = combatContent
+
+    local enableTriggerBotButton = Instance.new("TextButton")
+    enableTriggerBotButton.Size = UDim2.new(0, 100, 0, 30)
+    enableTriggerBotButton.Position = UDim2.new(0, 0, 0, 180)
+    enableTriggerBotButton.Text = "Enable TriggerBot"
+    enableTriggerBotButton.Parent = combatContent
+
+    enableTriggerBotButton.MouseButton1Click:Connect(function()
+        toggleTriggerBot()
+        enableTriggerBotButton.Text = triggerBotEnabled and "Disable TriggerBot" or "Enable TriggerBot"
+    end)
 end
 
 RunService.RenderStepped:Connect(function()
@@ -386,6 +409,21 @@ RunService.RenderStepped:Connect(function()
         if target then
             task.wait(reactionTime)
             smoothAim(target.Position)
+        end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if triggerBotEnabled then
+        local target = Mouse.Target
+        if target and target.Parent and target.Parent:FindFirstChild("Humanoid") then
+            local targetPlayer = game.Players:GetPlayerFromCharacter(target.Parent)
+            local localPlayer = game.Players.LocalPlayer
+            if targetPlayer and targetPlayer.Team ~= localPlayer.Team then
+                mouse1press()
+                task.wait(0.05)
+                mouse1release()
+            end
         end
     end
 end)
