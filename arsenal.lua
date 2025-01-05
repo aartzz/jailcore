@@ -33,7 +33,7 @@ MainLabel.Name = "MainLabel"
 MainLabel.Size = UDim2.new(0, 100, 1, 0)
 MainLabel.Position = UDim2.new(0, 5, 0, 0)
 MainLabel.BackgroundTransparency = 1
-MainLabel.Text = "JailCore"
+MainLabel.Text = "Perc.cc"
 MainLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 MainLabel.TextSize = 14
 MainLabel.Font = Enum.Font.SourceSansBold
@@ -225,33 +225,41 @@ local function bhopMethod()
 
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local rootPart = character:FindFirstChild("HumanoidRootPart")
-    if humanoid and rootPart and humanoid:GetState() == Enum.HumanoidStateType.Running then
-        isMoving = checkMovementInput()
-        if isMoving then
-            local moveDirection = Vector3.new()
+    if not humanoid or not rootPart then return end
 
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then
-                moveDirection = moveDirection + rootPart.CFrame.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then
-                moveDirection = moveDirection - rootPart.CFrame.LookVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.A) then
-                moveDirection = moveDirection - rootPart.CFrame.RightVector
-            end
-            if UserInputService:IsKeyDown(Enum.KeyCode.D) then
-                moveDirection = moveDirection + rootPart.CFrame.RightVector
-            end
+    local moveDirection = Vector3.new()
 
-            if moveDirection.Magnitude > 0 then
-                moveDirection = moveDirection.Unit
-            end
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+        moveDirection = moveDirection + rootPart.CFrame.LookVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+        moveDirection = moveDirection - rootPart.CFrame.LookVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+        moveDirection = moveDirection - rootPart.CFrame.RightVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+        moveDirection = moveDirection + rootPart.CFrame.RightVector
+    end
 
-            rootPart.Velocity = Vector3.new(moveDirection.X * bhopSpeed, rootPart.Velocity.Y, moveDirection.Z * bhopSpeed)
-        end
+    if moveDirection.Magnitude > 0 then
+        moveDirection = moveDirection.Unit
+    end
+
+    if humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+        rootPart.AssemblyLinearVelocity = Vector3.new(
+            moveDirection.X * bhopSpeed,
+            rootPart.AssemblyLinearVelocity.Y,
+            moveDirection.Z * bhopSpeed
+        )
+    else
+        rootPart.Velocity = Vector3.new(
+            moveDirection.X * bhopSpeed,
+            rootPart.Velocity.Y,
+            moveDirection.Z * bhopSpeed
+        )
     end
 end
-
 
 local function onInputChanged(input, gameProcessed)
     if not gameProcessed and input.UserInputType == Enum.UserInputType.Keyboard then
@@ -277,6 +285,12 @@ UserInputService.InputEnded:Connect(onInputChanged)
 game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
     if input.KeyCode == Enum.KeyCode.X and not gameProcessed then
         toggleBHop()
+    end
+end)
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.G and not gameProcessed then
+        toggleFly()
     end
 end)
 
@@ -379,6 +393,93 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
+local flyEnabled = false
+local flySpeed = 50
+local flyConnection = nil
+local flyingBodyPosition = nil
+local flyingBodyGyro = nil
+
+local function toggleFly()
+    flyEnabled = not flyEnabled
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+
+    if flyEnabled then
+        flyingBodyPosition = Instance.new("BodyPosition")
+        flyingBodyPosition.MaxForce = Vector3.new(500000, 500000, 500000)
+        flyingBodyPosition.D = 1000
+        flyingBodyPosition.P = 10000
+        flyingBodyPosition.Parent = humanoidRootPart
+
+        flyingBodyGyro = Instance.new("BodyGyro")
+        flyingBodyGyro.MaxTorque = Vector3.new(500000, 500000, 500000)
+        flyingBodyGyro.CFrame = humanoidRootPart.CFrame
+        flyingBodyGyro.Parent = humanoidRootPart
+
+        flyingBodyPosition.Position = humanoidRootPart.Position
+    else
+        if flyingBodyPosition then
+            flyingBodyPosition:Destroy()
+            flyingBodyPosition = nil
+        end
+        if flyingBodyGyro then
+            flyingBodyGyro:Destroy()
+            flyingBodyGyro = nil
+        end
+    end
+end
+
+local function flyMovement()
+    local character = LocalPlayer.Character
+    if not character then return end
+
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+
+    local moveDirection = Vector3.new(0, 0, 0)
+
+    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+        moveDirection = moveDirection + humanoidRootPart.CFrame.LookVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+        moveDirection = moveDirection - humanoidRootPart.CFrame.LookVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+        moveDirection = moveDirection - humanoidRootPart.CFrame.RightVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+        moveDirection = moveDirection + humanoidRootPart.CFrame.RightVector
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+        moveDirection = moveDirection + Vector3.new(0, 1, 0)
+    end
+    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+        moveDirection = moveDirection - Vector3.new(0, 1, 0)
+    end
+
+    if moveDirection.Magnitude > 0 then
+        moveDirection = moveDirection.Unit * flySpeed
+    end
+
+    if flyingBodyPosition then
+        flyingBodyPosition.Position = humanoidRootPart.Position + moveDirection
+    end
+end
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.F and not gameProcessed then
+        toggleFly()
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if flyEnabled then
+        flyMovement()
+    end
+end)
 
 local movementContent = ContentFrame:FindFirstChild("Movement")
 if movementContent then
@@ -399,6 +500,24 @@ if movementContent then
     enableBhopButton.MouseButton1Click:Connect(function()
         toggleBHop()
         enableBhopButton.Text = bhopEnabled and "Disable BHop" or "Enable BHop"
+    end)
+    local flyLabel = Instance.new("TextLabel")
+    flyLabel.Size = UDim2.new(1, 0, 0, 30)
+    flyLabel.Position = UDim2.new(0, 0, 0, 90)
+    flyLabel.Text = "Fly Module"
+    flyLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    flyLabel.BackgroundTransparency = 1
+    flyLabel.Parent = movementContent
+
+    local enableFlyButton = Instance.new("TextButton")
+    enableFlyButton.Size = UDim2.new(0, 100, 0, 30)
+    enableFlyButton.Position = UDim2.new(0, 0, 0, 130)
+    enableFlyButton.Text = "Enable Fly"
+    enableFlyButton.Parent = movementContent
+
+    enableFlyButton.MouseButton1Click:Connect(function()
+        toggleFly()
+        enableFlyButton.Text = flyEnabled and "Disable Fly" or "Enable Fly"
     end)
 end
 
