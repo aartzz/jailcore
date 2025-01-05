@@ -388,7 +388,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.F and aimEnabled then
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Z and aimEnabled then
         toggleAimbot()
     end
 end)
