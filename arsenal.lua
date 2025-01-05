@@ -221,7 +221,6 @@ local function bhopMethod()
         if isMoving then
             local moveDirection = Vector3.new()
 
-            -- Check which keys are pressed and adjust moveDirection accordingly
             if UserInputService:IsKeyDown(Enum.KeyCode.W) then
                 moveDirection = moveDirection + rootPart.CFrame.LookVector
             end
@@ -235,7 +234,6 @@ local function bhopMethod()
                 moveDirection = moveDirection + rootPart.CFrame.RightVector
             end
 
-            -- Normalize the direction to ensure consistent speed
             if moveDirection.Magnitude > 0 then
                 moveDirection = moveDirection.Unit
             end
@@ -278,14 +276,100 @@ RunService.RenderStepped:Connect(function()
         local humanoidRootPart = LocalPlayer.Character.HumanoidRootPart
         local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
         if humanoidRootPart and humanoid then
-            -- Check if the player is grounded
             if humanoid:GetState() == Enum.HumanoidStateType.Physics and humanoidRootPart.Velocity.Y == 0 then
-                humanoid:ChangeState(Enum.HumanoidStateType.Physics)  -- Ensure it's in Physics mode
-                humanoidRootPart.Velocity = Vector3.new(bhopSpeed, jumpSpeed, 0)  -- Apply velocity to simulate the bunny hop
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                humanoidRootPart.Velocity = Vector3.new(bhopSpeed, jumpSpeed, 0)
             end
         end
     end
 end)
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Mouse = LocalPlayer:GetMouse()
+local Camera = workspace.CurrentCamera
+local UserInputService = game:GetService("UserInputService")
+
+local aimEnabled = false
+local smoothness = 0.2
+
+local function getClosestTarget()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Team ~= LocalPlayer.Team and player.Character then
+            local character = player.Character
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character:FindFirstChild("Humanoid")
+
+            if rootPart and humanoid and humanoid.Health > 0 then
+                local screenPos, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
+                if onScreen then
+                    local mousePos = Vector2.new(Mouse.X, Mouse.Y)
+                    local targetPos = Vector2.new(screenPos.X, screenPos.Y)
+                    local distance = (mousePos - targetPos).Magnitude
+
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPlayer = rootPart
+                    end
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+local function smoothAim(targetPosition)
+    local currentCFrame = Camera.CFrame
+    local targetCFrame = CFrame.new(currentCFrame.Position, targetPosition)
+    Camera.CFrame = currentCFrame:Lerp(targetCFrame, smoothness)
+end
+
+local function toggleAimbot()
+    aimEnabled = not aimEnabled
+end
+
+local combatContent = ContentFrame:FindFirstChild("Combat")
+if combatContent then
+    local aimbotLabel = Instance.new("TextLabel")
+    aimbotLabel.Size = UDim2.new(1, 0, 0, 30)
+    aimbotLabel.Position = UDim2.new(0, 0, 0, 60)
+    aimbotLabel.Text = "Aimbot Module"
+    aimbotLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    aimbotLabel.BackgroundTransparency = 1
+    aimbotLabel.Parent = combatContent
+
+    local enableAimbotButton = Instance.new("TextButton")
+    enableAimbotButton.Size = UDim2.new(0, 100, 0, 30)
+    enableAimbotButton.Position = UDim2.new(0, 0, 0, 100)
+    enableAimbotButton.Text = "Enable Aimbot"
+    enableAimbotButton.Parent = combatContent
+
+    enableAimbotButton.MouseButton1Click:Connect(function()
+        toggleAimbot()
+        enableAimbotButton.Text = aimEnabled and "Disable Aimbot" or "Enable Aimbot"
+    end)
+end
+
+RunService.RenderStepped:Connect(function()
+    if aimEnabled then
+        local target = getClosestTarget()
+        if target then
+            smoothAim(target.Position)
+        end
+    end
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.Z and aimEnabled then
+        toggleAimbot()
+    end
+end)
+
 
 local movementContent = ContentFrame:FindFirstChild("Movement")
 if movementContent then
