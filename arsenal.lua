@@ -317,6 +317,14 @@ local UserInputService = game:GetService("UserInputService")
 local aimEnabled = false
 local smoothness = 0.2
 
+local reactionTime = 0.015
+
+local function smoothAim(targetPosition)
+    local currentCFrame = Camera.CFrame
+    local targetCFrame = CFrame.new(currentCFrame.Position, targetPosition)
+    Camera.CFrame = currentCFrame:Lerp(targetCFrame, smoothness)
+end
+
 local function getClosestTarget()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -344,12 +352,6 @@ local function getClosestTarget()
     end
 
     return closestPlayer
-end
-
-local function smoothAim(targetPosition)
-    local currentCFrame = Camera.CFrame
-    local targetCFrame = CFrame.new(currentCFrame.Position, targetPosition)
-    Camera.CFrame = currentCFrame:Lerp(targetCFrame, smoothness)
 end
 
 local function toggleAimbot()
@@ -382,6 +384,7 @@ RunService.RenderStepped:Connect(function()
     if aimEnabled then
         local target = getClosestTarget()
         if target then
+            task.wait(reactionTime)
             smoothAim(target.Position)
         end
     end
