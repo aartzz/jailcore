@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="./README/jb-w.png">
-    <source media="(prefers-color-scheme: light)" srcset="./README/jb-bk.png">
+    <source media="(prefers-color-scheme: light)" srcset="./README/jb-b.png">
   </picture>
 </p>
 <h2 align="center">
