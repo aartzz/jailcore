@@ -421,12 +421,12 @@ RunService.RenderStepped:Connect(function()
             local localPlayer = game.Players.LocalPlayer
             if targetPlayer and targetPlayer.Team ~= localPlayer.Team then
                 mouse1press()
-                task.wait(0.05)
                 mouse1release()
             end
         end
     end
 end)
+
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.Z and aimEnabled then
