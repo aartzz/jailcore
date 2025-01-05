@@ -146,19 +146,22 @@ local function createEspForPlayer(player)
         HealthBar = healthBar
     }
 end
-
 local function updateEspForPlayer(player)
     local character = player.Character
     local esp = espObjects[player]
 
     if not (character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid")) then
-        esp.Box.Visible = false
-        esp.HealthBar.Visible = false
+        if esp then
+            esp.Box.Visible = false
+            esp.HealthBar.Visible = false
+        end
         return
     end
+
     local rootPart = character.HumanoidRootPart
     local humanoid = character.Humanoid
     local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+    
     if onScreen then
         local headPosition = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position + Vector3.new(0, 3, 0))
         local footPosition = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position - Vector3.new(0, 3, 0))
@@ -179,7 +182,17 @@ local function updateEspForPlayer(player)
         esp.HealthBar.Visible = false
     end
 end
+local function removeEspForPlayer(player)
+    if espObjects[player] then
+        espObjects[player].Box:Remove()
+        espObjects[player].HealthBar:Remove()
+        espObjects[player] = nil
+    end
+end
 
+Players.PlayerRemoving:Connect(function(player)
+    removeEspForPlayer(player)
+end)
 
 local function toggleEsp()
     espEnabled = not espEnabled
@@ -187,11 +200,7 @@ local function toggleEsp()
         if espEnabled then
             createEspForPlayer(player)
         else
-            if espObjects[player] then
-                espObjects[player].Box:Remove()
-                espObjects[player].HealthBar:Remove()
-                espObjects[player] = nil
-            end
+            removeEspForPlayer(player)
         end
     end
 end
@@ -365,7 +374,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.Z and aimEnabled then
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.F and aimEnabled then
         toggleAimbot()
     end
 end)
