@@ -19,7 +19,7 @@
 1. Download a [Solara Executor](https://getsolara.dev/)
 2. Execute the provided loadstring below.
 ```luau
-loadstring(game:HttpGet("https://raw.githubusercontent.com/aartzz/jailcore/main/main.lua", true))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/aartzz/jailcore/refs/heads/main/main.lua", true))()
 ```
 
 ## Developers & Credits
