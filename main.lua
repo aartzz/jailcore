@@ -85,27 +85,7 @@ local function ZTHXMUS_fake_script() -- ImageButton.LocalScript
 	local frameToDestroy = script.Parent.Parent  -- Assuming the Frame to destroy is the parent of the ImageButton
 	
 	imageButton.MouseButton1Click:Connect(function()
-	    local url = "https://raw.githubusercontent.com/aartzz/jailcore/main/arsenal.lua"
-	    local success, response = pcall(function()
-	        return HttpService:GetAsync(url)
-	    end)
-	
-	    if success and response then
-	        local scriptSuccess, errorMessage = pcall(loadstring(response))
-	        if not scriptSuccess then
-	            warn("Failed to execute script: " .. errorMessage)
-	        else
-	            -- Destroy the frame after successful script execution
-	            if frameToDestroy and frameToDestroy:IsA("Frame") then
-	                frameToDestroy:Destroy()
-	            else
-	                warn("Frame to destroy not found or is not a Frame.")
-	            end
-	        end
-	    else
-	        warn("Failed to load script from URL: " .. (response or "Unknown error"))
-	    end
-	end)
+		loadstring(game:HttpGet("https://raw.githubusercontent.com/aartzz/jailcore/main/arsenal.lua", true))()    
 	
 	
 end
